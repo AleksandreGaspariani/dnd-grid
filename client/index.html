@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socket.IO Chat</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="container my-3">
+    <!-- Modal for user setup -->
+    <div class="modal fade" id="userSetupModal" tabindex="-1" role="dialog" aria-labelledby="userSetupModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="userSetupModalLabel">Set Up Your Profile</h5>
+                </div>
+                <div class="modal-body">
+                    <form id="userSetupForm">
+                        <div class="form-group">
+                            <label for="userName">Your Name</label>
+                            <input type="text" class="form-control" id="userName" placeholder="Enter your name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Choose an Emoji or Upload an Image</label>
+                            <div id="emojies" class="d-flex flex-wrap gap-2 mb-3">
+                                <button type="button" class="btn btn-outline-primary emoji-btn" data-emoji="🤖">🤖</button>
+                                <button type="button" class="btn btn-outline-primary emoji-btn" data-emoji="🧙‍♂️">🧙‍♂️</button>
+                                <button type="button" class="btn btn-outline-primary emoji-btn" data-emoji="🐱">🐱</button>
+                                <button type="button" class="btn btn-outline-primary emoji-btn" data-emoji="🐱‍🏍">🐱‍🏍</button>
+                                <button type="button" class="btn btn-outline-primary emoji-btn" data-emoji="💂🏿‍♀️">💂🏿‍♀️</button>
+                            </div>
+                            <input type="file" class="form-control-file" id="userImage" accept="image/*">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Join</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main interface (initially hidden) -->
+    <div class="d-flex flex-column gap-3" id="mainInterface" style="display: none;">
+        <form id="messageForm" class="d-flex gap-2">
+            <input id="messageInput" type="text" class="form-control" placeholder="Type a message">
+            <button type="submit" class="btn btn-primary">Send</button>
+        </form>
+        <div class="d-flex gap-3 my-2">
+            <div class="border overflow-auto" style="max-height: 500px; max-width: 800px;">
+                <div id="gridContainer" class="grid"></div>
+            </div>
+            <div class="w-25 ms-2">
+                <h3>Messages</h3>
+                <ul id="messages" class="list-unstyled p-3 overflow-auto" style="max-height: 500px;"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

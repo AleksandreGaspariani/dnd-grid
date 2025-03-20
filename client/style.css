@@ -1,0 +1,29 @@
+.grid {
+    display: grid;
+    gap: 2px;
+}
+
+.grid-square {
+    width: 2rem;
+    height: 2rem;
+    background-color: #f0f0f0;
+    border: 0.1px solid #999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.grid-square:hover {
+    background-color: #e0e0e0;
+}
+
+#messages {
+    list-style-type: none;
+    padding: 0;
+}
+
+#messages li {
+    padding: 5px;
+    border-bottom: 1px solid #ddd;
+}
