@@ -34,16 +34,24 @@ io.on('connection', (socket) => {
             const user = users[socket.id];
             const messageWithUser = `${user.name}: ${msg}`;
             console.log('Message received:', messageWithUser);
-            io.emit('chatMessage', messageWithUser); // Send message with username
+            io.emit('chatMessage', messageWithUser);
         }
     });
 
     socket.on('move', (position) => {
         if (users[socket.id]) {
-            users[socket.id].x = position.x;
-            users[socket.id].y = position.y;
-            console.log(`${socket.id} moved to (${position.x}, ${position.y})`);
-            io.emit('usersUpdate', users);
+            const user = users[socket.id];
+            const dx = Math.abs(position.x - user.x);
+            const dy = Math.abs(position.y - user.y);
+            const isWithinRange = (dx + dy) <= 6;
+            const isOccupied = Object.values(users).some(u => u.x === position.x && u.y === position.y && u !== user);
+
+            if (isWithinRange && !isOccupied) {
+                user.x = position.x;
+                user.y = position.y;
+                console.log(`${socket.id} moved to (${position.x}, ${position.y})`);
+                io.emit('usersUpdate', users);
+            }
         }
     });
 

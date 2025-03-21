@@ -21,7 +21,7 @@ document.getElementById('messageForm').addEventListener('submit', (e) => {
 socket.on('chatMessage', (msg) => {
     const messages = document.getElementById('messages');
     const li = document.createElement('li');
-    li.textContent = msg; // Already includes username from server
+    li.textContent = msg;
     messages.appendChild(li);
 });
 
@@ -39,9 +39,19 @@ function drawGrid(width, height) {
             square.classList.add('grid-square');
             square.dataset.x = x;
             square.dataset.y = y;
-            square.addEventListener('click', () => {
-                socket.emit('move', { x, y });
+
+            // Drag-and-drop events
+            square.addEventListener('dragover', (e) => e.preventDefault());
+            square.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const targetX = parseInt(square.dataset.x);
+                const targetY = parseInt(square.dataset.y);
+                if (isValidMove(targetX, targetY)) {
+                    socket.emit('move', { x: targetX, y: targetY });
+                    clearHighlights();
+                }
             });
+
             gridContainer.appendChild(square);
         }
     }
@@ -79,7 +89,6 @@ document.getElementById('userSetupForm').addEventListener('submit', (e) => {
         return;
     }
 
-    // Hide modal and show main interface
     $('#userSetupModal').modal('hide');
     document.getElementById('mainInterface').style.display = 'block';
     drawGrid(20, 20);
@@ -115,22 +124,132 @@ socket.on('emojiError', (msg) => {
 });
 
 // Update grid with user positions
+let myPosition = null;
 socket.on('usersUpdate', (users) => {
     const squares = document.querySelectorAll('.grid-square');
-    squares.forEach(square => square.textContent = '');
+    squares.forEach(square => {
+        square.innerHTML = '';
+        square.classList.remove('highlight');
+    });
+
     Object.entries(users).forEach(([id, { emoji, image, x, y }]) => {
         const square = document.querySelector(`.grid-square[data-x="${x}"][data-y="${y}"]`);
         if (square) {
+            const content = document.createElement('div');
+            content.classList.add('figure');
             if (image) {
                 const img = document.createElement('img');
                 img.src = image;
                 img.style.width = '2rem';
                 img.style.height = '2rem';
-                square.innerHTML = '';
-                square.appendChild(img);
+                content.appendChild(img);
             } else if (emoji) {
-                square.textContent = emoji;
+                content.textContent = emoji;
             }
+
+            // Make my figure draggable
+            if (id === socket.id) {
+                content.draggable = true;
+                content.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', 'move');
+                    content.classList.add('hover');
+                    highlightAvailableMoves(x, y, users);
+                });
+                content.addEventListener('dragend', () => {
+                    content.classList.remove('hover');
+                });
+                content.addEventListener('click', () => {
+                    highlightAvailableMoves(x, y, users);
+                });
+                myPosition = { x, y };
+            }
+
+            square.appendChild(content);
         }
     });
 });
+
+// Highlight available moves in a filled diamond pattern (6 squares max)
+function highlightAvailableMoves(x, y, users) {
+    clearHighlights();
+    const maxSteps = 6; // 30 feet / 5 feet per square
+    const squares = document.querySelectorAll('.grid-square');
+    squares.forEach(square => {
+        const targetX = parseInt(square.dataset.x);
+        const targetY = parseInt(square.dataset.y);
+        const dx = Math.abs(targetX - x);
+        const dy = Math.abs(targetY - y);
+        
+        const isWithinRange = (dx + dy) <= maxSteps;
+        const isOccupied = Object.values(users).some(u => u.x === targetX && u.y === targetY && u !== users[socket.id]);
+        
+        if (isWithinRange && !isOccupied) {
+            square.classList.add('highlight');
+        }
+    });
+}
+
+function clearHighlights() {
+    document.querySelectorAll('.grid-square.highlight').forEach(square => {
+        square.classList.remove('highlight');
+    });
+}
+
+function isValidMove(targetX, targetY) {
+    if (!myPosition) return false;
+    const dx = Math.abs(targetX - myPosition.x);
+    const dy = Math.abs(targetY - myPosition.y);
+    return (dx + dy) <= 6; // Max 6 steps total (30 feet)
+}
+
+// Arrow button controls
+document.getElementById('moveUp').addEventListener('click', () => moveFigure(0, -1));
+document.getElementById('moveDown').addEventListener('click', () => moveFigure(0, 1));
+document.getElementById('moveLeft').addEventListener('click', () => moveFigure(-1, 0));
+document.getElementById('moveRight').addEventListener('click', () => moveFigure(1, 0));
+
+// Keyboard arrow controls
+document.addEventListener('keydown', (e) => {
+    switch (e.key) {
+        case 'ArrowUp':
+            moveFigure(0, -1);
+            break;
+        case 'ArrowDown':
+            moveFigure(0, 1);
+            break;
+        case 'ArrowLeft':
+            moveFigure(-1, 0);
+            break;
+        case 'ArrowRight':
+            moveFigure(1, 0);
+            break;
+    }
+});
+
+// Move figure function
+function moveFigure(dx, dy) {
+    if (!myPosition) return;
+    const targetX = myPosition.x + dx;
+    const targetY = myPosition.y + dy;
+    if (isValidMove(targetX, targetY)) {
+        const users = getCurrentUsers();
+        const isOccupied = Object.values(users).some(u => u.x === targetX && u.y === targetY && u !== users[socket.id]);
+        if (!isOccupied) {
+            socket.emit('move', { x: targetX, y: targetY });
+            clearHighlights();
+        }
+    }
+}
+
+// Helper to get current users from the grid (for occupancy check)
+function getCurrentUsers() {
+    const users = {};
+    document.querySelectorAll('.grid-square .figure').forEach(figure => {
+        const square = figure.parentElement;
+        const x = parseInt(square.dataset.x);
+        const y = parseInt(square.dataset.y);
+        const id = (x === myPosition.x && y === myPosition.y) ? socket.id : 'other';
+        users[id] = { x, y };
+    });
+    return users;
+}
