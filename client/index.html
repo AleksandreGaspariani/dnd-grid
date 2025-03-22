@@ -5,92 +5,104 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Socket.IO Chat</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"> -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 
-<body class="container my-3">
+<body class="container p-5">
     <!-- Modal for user setup -->
-    <div class="modal fade" id="userSetupModal" tabindex="-1" role="dialog" aria-labelledby="userSetupModalLabel"
-        aria-hidden="true" data-backdrop="static" data-keyboard="false">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="userSetupModalLabel">Set Up Your Profile</h5>
+    <div class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50" id="userSetupModal">
+        <div class="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
+            <h5 class="text-2xl font-bold text-gray-800 mb-6">👤 Set Up Your Profile</h5>
+
+            <form id="userSetupForm" class="space-y-4">
+                <div>
+                    <label for="userName" class="block text-gray-600">Your Name</label>
+                    <input type="text" class="w-full p-3 border rounded-lg" id="userName" placeholder="Enter your name"
+                        required>
                 </div>
-                <div class="modal-body">
-                    <form id="userSetupForm">
-                        <div class="form-group">
-                            <label for="userName">Your Name</label>
-                            <input type="text" class="form-control" id="userName" placeholder="Enter your name"
-                                required>
-                        </div>
-                        <div class="form-group">
-                            <label>Choose an Emoji or Upload an Image</label>
-                            <div id="emojies" class="d-flex flex-wrap gap-2 mb-3">
-                                <button type="button" class="btn btn-outline-primary emoji-btn"
-                                    data-emoji="🤖">🤖</button>
-                                <button type="button" class="btn btn-outline-primary emoji-btn"
-                                    data-emoji="🧙‍♂️">🧙‍♂️</button>
-                                <button type="button" class="btn btn-outline-primary emoji-btn"
-                                    data-emoji="🐱">🐱</button>
-                                <button type="button" class="btn btn-outline-primary emoji-btn"
-                                    data-emoji="🏍️">🏍️</button>
-                                <button type="button" class="btn btn-outline-primary emoji-btn"
-                                    data-emoji="💂🏿‍♀️">💂🏿‍♀️</button>
-                            </div>
-                            <input type="file" class="form-control-file" id="userImage" accept="image/*">
-                        </div>
-                        <button type="submit" class="btn btn-primary">Join</button>
-                    </form>
+
+                <div>
+                    <label class="block text-gray-600">Choose an Emoji or Upload an Image</label>
+                    <div id="emojies" class="flex flex-wrap gap-2 my-3">
+                        <button type="button" class="emoji-btn bg-gray-200 hover:bg-gray-300 p-2 rounded-lg"
+                            data-emoji="🤖">🤖</button>
+                        <button type="button" class="emoji-btn bg-gray-200 hover:bg-gray-300 p-2 rounded-lg"
+                            data-emoji="🧙‍♂️">🧙‍♂️</button>
+                        <button type="button" class="emoji-btn bg-gray-200 hover:bg-gray-300 p-2 rounded-lg"
+                            data-emoji="🐱">🐱</button>
+                        <button type="button" class="emoji-btn bg-gray-200 hover:bg-gray-300 p-2 rounded-lg"
+                            data-emoji="🏍️">🏍️</button>
+                        <button type="button" class="emoji-btn bg-gray-200 hover:bg-gray-300 p-2 rounded-lg"
+                            data-emoji="💂🏿‍♀️">💂🏿‍♀️</button>
+                    </div>
+                    <input type="file" class="w-full border p-2 rounded-lg" id="userImage" accept="image/*">
                 </div>
-            </div>
+
+                <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg">🚀
+                    Join</button>
+            </form>
         </div>
     </div>
 
     <!-- Main interface (initially hidden) -->
-    <div class="d-flex flex-column gap-3" id="mainInterface" style="display: none;">
-        <!-- Add background image input -->
-        <form id="messageForm" class="d-flex gap-2">
-            <input id="messageInput" type="text" class="form-control" placeholder="Type a message">
-            <button type="submit" class="btn btn-primary">Send</button>
+    <div id="mainInterface" class="hidden flex flex-col gap-4  bg-white overflow-auto rounded-lg m-0 w-full h-full">
+        <form id="messageForm" class="flex gap-3">
+            <input id="messageInput" type="text" class="w-full p-3 border rounded-lg" placeholder="Type a message">
+            <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-5 py-3 rounded-lg">Send</button>
         </form>
-        <div class="d-flex gap-3 my-2">
-            <div class="border overflow-auto"
-                style="max-height: 500px; max-width: 100%; background-size: 100% 100%; background-repeat: no-repeat; overflow: auto; background-position: center; background-size: contain;">
-                <div id="gridContainer" class="grid"></div>
-            </div>
+
+        <div class="border overflow-scroll rounded-lg p-4" style="max-width: 95vw; max-height: 90vh;">
+            <div id="gridContainer" class="grid w-full h-full p-4"></div>
         </div>
     </div>
-    <div id="controller" style="margin-top: 20px; text-align: center;">
-        <button id="moveUp" class="btn btn-secondary">↑</button><br>
-        <button id="moveLeft" class="btn btn-secondary">←</button>
-        <button id="moveDown" class="btn btn-secondary">↓</button>
-        <button id="moveRight" class="btn btn-secondary">→</button>
+
+    <div id="controller" class="mt-6 text-center d-none">
+        <div class="flex justify-center gap-3">
+            <button id="moveUp" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-lg">↑</button>
+        </div>
+        <div class="flex justify-center gap-3 mt-2">
+            <button id="moveLeft" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-lg">←</button>
+            <button id="moveDown" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-lg">↓</button>
+            <button id="moveRight" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-lg">→</button>
+        </div>
     </div>
 
     <!-- Add grid size input fields -->
-    <div class="form-group d-flex flex-column gap-2 w-50">
-        <div class="d-flex" style="gap: 2rem;">
-            <div class="d-flex flex-column gap-2 align-items-center w-25">
-                <label for="gridWidthInput">Grid Width</label>
-                <input type="number" class="form-control" id="gridWidthInput" value="0">
+    <div class="form-group p-6 bg-white shadow-xl rounded-2xl max-w-lg mx-auto border border-gray-200 d-none">
+        <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2 mb-4">
+            🛠️ Grid Admin Controller
+        </h2>
+
+        <div class="flex gap-6 mb-6">
+            <div class="flex flex-col gap-2 items-center w-1/3">
+                <label for="gridWidthInput" class="text-gray-600">📏 Grid Width</label>
+                <input type="number" class="form-control border p-2 rounded-lg w-full" id="gridWidthInput" value="0">
             </div>
-            <div class="d-flex flex-column gap-2 align-items-center w-25">
-                <label for="gridHeightInput">Grid Height</label>
-                <input type="number" class="form-control" id="gridHeightInput" value="0">
+            <div class="flex flex-col gap-2 items-center w-1/3">
+                <label for="gridHeightInput" class="text-gray-600">📐 Grid Height</label>
+                <input type="number" class="form-control border p-2 rounded-lg w-full" id="gridHeightInput" value="0">
             </div>
-            <button id="updateGridSize" class="btn btn-primary btn-sm mt-2 w-50">Update Grid Size</button>
+            <button id="updateGridSize"
+                class="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg w-1/3">
+                🚀 Update Grid
+            </button>
         </div>
-        <div class="form-group">
-            <label for="backgroundImageInput">Change Background Image</label>
-            <input type="file" class="form-control-file" id="backgroundImageInput" accept="image/*">
+
+        <div class="form-group mb-4">
+            <label for="backgroundImageInput" class="text-gray-600">🖼️ Change Background Image</label>
+            <input type="file" class="form-control border p-2 rounded-lg w-full" id="backgroundImageInput"
+                accept="image/*">
         </div>
+
         <div class="form-group">
-            <label for="backgroundImageUrlInput">Change Background Image (URL)</label>
-            <input type="text" class="form-control" id="backgroundImageUrlInput" placeholder="Enter image URL">
+            <label for="backgroundImageUrlInput" class="text-gray-600">🌐 Change Background Image (URL)</label>
+            <input type="text" class="form-control border p-2 rounded-lg w-full" id="backgroundImageUrlInput"
+                placeholder="Enter image URL">
         </div>
     </div>
+
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>

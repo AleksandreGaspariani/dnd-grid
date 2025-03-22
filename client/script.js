@@ -4,6 +4,11 @@ const socket = io();
 // Show modal on page load
 $(document).ready(() => {
     $('#userSetupModal').modal('show');
+    window.addEventListener("keydown", function(e) {
+        if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].indexOf(e.code) > -1) {
+            e.preventDefault();
+        }
+    }, false)
 });
 
 // Handle form submission to send messages
@@ -98,7 +103,7 @@ document.getElementById('userSetupForm').addEventListener('submit', (e) => {
 
     $('#userSetupModal').modal('hide');
     document.getElementById('mainInterface').style.display = 'block';
-    drawGrid(40, 20);
+    drawGrid(10, 10);
 });
 
 // Add click listeners to emoji buttons
