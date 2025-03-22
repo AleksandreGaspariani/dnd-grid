@@ -4,6 +4,7 @@ const socket = io();
 // Show modal on page load
 $(document).ready(() => {
     $('#userSetupModal').modal('show');
+
     window.addEventListener("keydown", function(e) {
         if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].indexOf(e.code) > -1) {
             e.preventDefault();
@@ -102,8 +103,16 @@ document.getElementById('userSetupForm').addEventListener('submit', (e) => {
     }
 
     $('#userSetupModal').modal('hide');
-    document.getElementById('mainInterface').style.display = 'block';
-    drawGrid(10, 10);
+    // document.getElementById('mainInterface').style.display = 'block';
+    // document.getElementById('controller').classList.remove('d-none');
+});
+
+// Handle guest joining
+document.getElementById('joinAsGuest').addEventListener('click', () => {
+    $('#userSetupModal').modal('hide');
+    // document.getElementById('mainInterface').style.display = 'block';
+    $('#controller').empty();
+    socket.emit('joinAsGuest');
 });
 
 // Add click listeners to emoji buttons
@@ -315,3 +324,15 @@ document.getElementById('updateGridSize').addEventListener('click', () => {
 socket.on('gridSizeUpdate', ({ width, height }) => {
     drawGrid(width, height);
 });
+
+function grid(){
+    $('#mainInterface').toggleClass('hidden');
+}
+
+function dm(){
+    $('#dmControllers').toggleClass('hidden');
+}
+
+function controllers(){
+    $('#controller').toggleClass('hidden');
+}

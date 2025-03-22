@@ -33,6 +33,10 @@ io.on('connection', (socket) => {
         io.emit('usersUpdate', users);
     });
 
+    socket.on('joinAsGuest', () => {
+        console.log(`Guest user connected: ${socket.id}`);
+    });
+
     socket.on('chatMessage', (msg) => {
         if (users[socket.id]) {
             const user = users[socket.id];

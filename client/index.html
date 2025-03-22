@@ -42,35 +42,41 @@
 
                 <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg">🚀
                     Join</button>
+                <button type="button" id="joinAsGuest"
+                    class="w-full bg-gray-500 hover:bg-gray-600 text-white py-3 rounded-lg">Join as Guest</button>
             </form>
         </div>
     </div>
 
     <!-- Main interface (initially hidden) -->
-    <div id="mainInterface" class="hidden flex flex-col gap-4  bg-white overflow-auto rounded-lg m-0 w-full h-full">
-        <form id="messageForm" class="flex gap-3">
-            <input id="messageInput" type="text" class="w-full p-3 border rounded-lg" placeholder="Type a message">
-            <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-5 py-3 rounded-lg">Send</button>
-        </form>
-
+    <div id="mainInterface" class="flex flex-col gap-4  bg-white overflow-auto rounded-lg m-0 w-full h-full hidden">
         <div class="border overflow-scroll rounded-lg p-4" style="max-width: 95vw; min-height: 90vh ;max-height: 90vh;">
             <div id="gridContainer" class="grid w-full h-full p-4"></div>
         </div>
     </div>
 
-    <div id="controller" class="mt-6 text-center d-none">
+    <div id="controller" class="mt-6 text-center"
+        style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
         <div class="flex justify-center gap-3">
-            <button id="moveUp" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-lg">↑</button>
+            <button id="moveUp" class="bg-green-400 rounded-2xl btn-lg text-green-700 text-center">↑</button>
         </div>
         <div class="flex justify-center gap-3 mt-2">
-            <button id="moveLeft" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-lg">←</button>
-            <button id="moveDown" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-lg">↓</button>
-            <button id="moveRight" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-lg">→</button>
+            <button id="moveLeft" class="bg-green-400 rounded-2xl btn-lg text-green-700 text-center">←</button>
+            <button id="moveDown" class="bg-green-400 rounded-2xl btn-lg text-green-700 text-center">↓</button>
+            <button id="moveRight" class="bg-green-400 rounded-2xl btn-lg text-green-700 text-center">→</button>
+        </div>
+
+        <div class="d-flex w-50">
+            <form id="messageForm" class="flex gap-3 flex-col w-100">
+                <input id="messageInput" type="text" class="w-full p-3 border rounded-lg" placeholder="Type a message">
+                <button type="submit"
+                    class="bg-green-500 hover:bg-green-600 text-white px-5 py-3 rounded-lg w-100">Send</button>
+            </form>
         </div>
     </div>
 
     <!-- Add grid size input fields -->
-    <div class="form-group p-6 bg-white shadow-xl rounded-2xl max-w-lg mx-auto border border-gray-200 d-none"
+    <div class="form-group p-6 bg-white shadow-xl rounded-2xl max-w-lg mx-auto border border-gray-200 hidden"
         id="dmControllers">
         <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2 mb-4">
             🛠️ Grid Admin Controller
@@ -104,7 +110,7 @@
         </div>
     </div>
 
-
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
