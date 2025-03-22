@@ -4,19 +4,13 @@ const socket = io();
 // Show modal on page load
 $(document).ready(() => {
     $('#userSetupModal').modal('show');
-
-    window.addEventListener("keydown", function(e) {
-        if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].indexOf(e.code) > -1) {
-            e.preventDefault();
-        }
-    }, false)
 });
 
 // Handle form submission to send messages
 document.getElementById('messageForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const input = document.getElementById('messageInput');
-    const message = input.value.trim();
+    const message = input.value.trim(); // Changed to trim for cleaner input
     if (message) {
         socket.emit('chatMessage', message);
         input.value = '';
@@ -33,8 +27,10 @@ socket.on('chatMessage', (msg) => {
         messageBubble.textContent = message;
         userFigure.appendChild(messageBubble);
         setTimeout(() => {
-            userFigure.removeChild(messageBubble);
-        }, 8000);
+            if (messageBubble.parentElement) { // Check if still attached
+                userFigure.removeChild(messageBubble);
+            }
+        }, 4000);
     }
 });
 
@@ -53,7 +49,6 @@ function drawGrid(width, height) {
             square.dataset.x = x;
             square.dataset.y = y;
 
-            // Drag-and-drop events
             square.addEventListener('dragover', (e) => e.preventDefault());
             square.addEventListener('drop', (e) => {
                 e.preventDefault();
@@ -103,14 +98,11 @@ document.getElementById('userSetupForm').addEventListener('submit', (e) => {
     }
 
     $('#userSetupModal').modal('hide');
-    // document.getElementById('mainInterface').style.display = 'block';
-    // document.getElementById('controller').classList.remove('d-none');
 });
 
 // Handle guest joining
 document.getElementById('joinAsGuest').addEventListener('click', () => {
     $('#userSetupModal').modal('hide');
-    // document.getElementById('mainInterface').style.display = 'block';
     $('#controller').empty();
     socket.emit('joinAsGuest');
 });
@@ -169,7 +161,6 @@ socket.on('usersUpdate', (users) => {
                 content.textContent = emoji;
             }
 
-            // Make my figure draggable
             if (id === socket.id) {
                 content.draggable = true;
                 content.addEventListener('dragstart', (e) => {
@@ -194,7 +185,7 @@ socket.on('usersUpdate', (users) => {
 // Highlight available moves in a filled diamond pattern (6 squares max)
 function highlightAvailableMoves(x, y, users) {
     clearHighlights();
-    const maxSteps = 6; // 30 feet / 5 feet per square
+    const maxSteps = 6;
     const squares = document.querySelectorAll('.grid-square');
     squares.forEach(square => {
         const targetX = parseInt(square.dataset.x);
@@ -221,7 +212,7 @@ function isValidMove(targetX, targetY) {
     if (!myPosition) return false;
     const dx = Math.abs(targetX - myPosition.x);
     const dy = Math.abs(targetY - myPosition.y);
-    return (dx + dy) <= 6; // Max 6 steps total (30 feet)
+    return (dx + dy) <= 6;
 }
 
 // Arrow button controls
@@ -263,7 +254,7 @@ function moveFigure(dx, dy) {
     }
 }
 
-// Helper to get current users from the grid (for occupancy check)
+// Helper to get current users from the grid
 function getCurrentUsers() {
     const users = {};
     document.querySelectorAll('.grid-square .figure').forEach(figure => {
@@ -280,7 +271,6 @@ function getCurrentUsers() {
 function changeBackgroundImage(imageUrl) {
     const gridParent = document.querySelector('#gridContainer');
     gridParent.style.backgroundImage = `url(${imageUrl})`;
-    // gridParent.style.backgroundSize = '100% 100%';
     gridParent.style.backgroundSize = 'fill';
     gridParent.style.backgroundRepeat = 'no-repeat';
     gridParent.style.overflow = 'auto';

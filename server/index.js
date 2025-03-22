@@ -8,7 +8,7 @@ const io = new Server(server);
 
 app.use(express.static('../client'));
 
-const availableEmojis = ['🤖', '🧙‍♂️', '🐱', '🐱‍🏍', '💂🏿‍♀️'];
+const availableEmojis = ['🤖', '🧙‍♂️', '🥷', '🐺', '😺'];
 const users = {};
 let gridSize = { width: 20, height: 20 };
 let backgroundImageUrl = '';

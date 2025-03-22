@@ -26,6 +26,7 @@
     justify-content: center;
     align-items: center;
     transition: transform 0.2s;
+    position: relative;
 }
 
 .figure.hover {
@@ -62,21 +63,21 @@
 
 .message-bubble {
     position: absolute;
-    top: -40px;
+    top: -3.5rem; /* Position above the figure */
     left: 50%;
-    right: 50%;
     transform: translateX(-50%);
-    background-color: white;
+    background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent white */
     color: black;
     border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 5px;
-    white-space: nowrap;
-    z-index: 10;
-    margin-bottom: 5px;
-    width: fit-content;
-    max-width: 6rem;
-    height: fit-content;
-    max-height: 6rem;
-    overflow: auto;
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem; /* Comfortable padding */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    font-size: 0.9rem;
+    line-height: 1.2;
+    white-space: normal; /* Allow text wrapping */
+    width: auto;
+    max-width: 10rem; /* Reasonable max width */
+    min-width: 4rem; /* Ensure small messages don’t collapse too much */
+    text-align: center;
+    z-index: 20; /* Above figures */
 }
