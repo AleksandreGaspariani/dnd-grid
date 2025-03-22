@@ -1,6 +1,5 @@
 .grid {
     display: grid;
-    gap: 2px;
 }
 
 .grid-square {
@@ -80,4 +79,13 @@
     min-width: 4rem; /* Ensure small messages don’t collapse too much */
     text-align: center;
     z-index: 20; /* Above figures */
+}
+
+.entity {
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
 }

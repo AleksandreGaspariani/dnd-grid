@@ -1,44 +1,61 @@
-// Connect to the Socket.IO server
-const socket = io();
-
-// Show modal on page load
-$(document).ready(() => {
-    $('#userSetupModal').modal('show');
+// Ensure Pako is loaded (via CDN or npm)
+const socket = io({
+    reconnectionAttempts: 5,
+    reconnectionDelay: 1000,
+    transports: ['websocket'] // Prefer WebSocket over polling
 });
 
-// Handle form submission to send messages
+// Decompress incoming data using Pako
+const decompressData = (buffer) => {
+    try {
+        const decompressed = pako.inflate(new Uint8Array(buffer), { to: 'string' });
+        return JSON.parse(decompressed);
+    } catch (e) {
+        return buffer; // Fallback to raw data if not compressed
+    }
+};
+
+// Modal setup
+$(document).ready(() => $('#userSetupModal').modal('show'));
+
+// Chat handling
 document.getElementById('messageForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const input = document.getElementById('messageInput');
-    const message = input.value.trim(); // Changed to trim for cleaner input
+    const message = input.value.trim();
     if (message) {
         socket.emit('chatMessage', message);
         input.value = '';
     }
 });
 
-// Listen for incoming messages from the server
 socket.on('chatMessage', (msg) => {
     const [userName, message] = msg.split(': ');
     const userFigure = document.querySelector(`.figure[data-name="${userName}"]`);
     if (userFigure) {
-        const messageBubble = document.createElement('div');
-        messageBubble.classList.add('message-bubble');
-        messageBubble.textContent = message;
-        userFigure.appendChild(messageBubble);
-        setTimeout(() => {
-            if (messageBubble.parentElement) { // Check if still attached
-                userFigure.removeChild(messageBubble);
-            }
-        }, 4000);
+        const bubble = document.createElement('div');
+        bubble.classList.add('message-bubble');
+        bubble.textContent = message;
+        userFigure.appendChild(bubble);
+        setTimeout(() => bubble.parentElement && userFigure.removeChild(bubble), 4000);
     }
 });
 
-// Grid drawing function
-function drawGrid(width, height) {
+// Optimized grid drawing with throttling
+const throttle = (func, limit) => {
+    let inThrottle;
+    return (...args) => {
+        if (!inThrottle) {
+            func(...args);
+            inThrottle = true;
+            setTimeout(() => inThrottle = false, limit);
+        }
+    };
+};
+
+const drawGrid = throttle((width, height) => {
     const gridContainer = document.getElementById('gridContainer');
     gridContainer.innerHTML = '';
-
     gridContainer.style.gridTemplateColumns = `repeat(${width}, 2rem)`;
     gridContainer.style.gridTemplateRows = `repeat(${height}, 2rem)`;
 
@@ -48,7 +65,6 @@ function drawGrid(width, height) {
             square.classList.add('grid-square');
             square.dataset.x = x;
             square.dataset.y = y;
-
             square.addEventListener('dragover', (e) => e.preventDefault());
             square.addEventListener('drop', (e) => {
                 e.preventDefault();
@@ -59,76 +75,50 @@ function drawGrid(width, height) {
                     clearHighlights();
                 }
             });
-
             gridContainer.appendChild(square);
         }
     }
-}
+}, 100);
 
-// Handle user setup form submission
+// User setup
 document.getElementById('userSetupForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const userName = document.getElementById('userName').value.trim();
     const imageInput = document.getElementById('userImage');
-    let emoji = null;
+    const selectedEmoji = document.querySelector('.emoji-btn.selected')?.dataset.emoji;
 
-    const selectedEmojiBtn = document.querySelector('.emoji-btn.selected');
-    if (selectedEmojiBtn) {
-        emoji = selectedEmojiBtn.dataset.emoji;
-    }
-
-    if (!userName) {
-        alert('Please enter a name');
-        return;
-    }
+    if (!userName) return alert('Please enter a name');
+    if (!selectedEmoji && imageInput.files.length === 0) return alert('Please pick an emoji or upload an image');
 
     if (imageInput.files.length > 0) {
         const file = imageInput.files[0];
         const reader = new FileReader();
-        reader.onload = (event) => {
-            const imageData = event.target.result;
-            socket.emit('pickUser', { name: userName, image: imageData });
-        };
+        reader.onload = (event) => socket.emit('pickUser', { name: userName, image: event.target.result });
         reader.readAsDataURL(file);
-    } else if (emoji) {
-        socket.emit('pickUser', { name: userName, emoji });
     } else {
-        alert('Please pick an emoji or upload an image');
-        return;
+        socket.emit('pickUser', { name: userName, emoji: selectedEmoji });
     }
-
     $('#userSetupModal').modal('hide');
 });
 
-// Handle guest joining
 document.getElementById('joinAsGuest').addEventListener('click', () => {
     $('#userSetupModal').modal('hide');
     $('#controller').empty();
     socket.emit('joinAsGuest');
 });
 
-// Add click listeners to emoji buttons
+// Emoji handling
 const emojiButtons = document.querySelectorAll('.emoji-btn');
 emojiButtons.forEach(button => {
     button.addEventListener('click', () => {
-        emojiButtons.forEach(btn => {
-            btn.classList.remove('selected');
-            btn.classList.remove('btn-primary');
-            btn.classList.add('btn-outline-primary');
-        });
-        button.classList.add('selected');
-        button.classList.add('btn-primary');
-        button.classList.remove('btn-outline-primary');
+        emojiButtons.forEach(btn => btn.classList.remove('selected', 'btn-primary'));
+        button.classList.add('selected', 'btn-primary');
     });
 });
 
-// Handle emoji list from server
-socket.on('emojiList', (emojis) => {
-    console.log('Received emoji list:', emojis);
-    emojiButtons.forEach(button => {
-        const emoji = button.dataset.emoji;
-        button.disabled = !emojis.includes(emoji);
-    });
+socket.on('emojiList', (buffer) => {
+    const emojis = decompressData(buffer);
+    emojiButtons.forEach(button => button.disabled = !emojis.includes(button.dataset.emoji));
 });
 
 socket.on('emojiError', (msg) => {
@@ -136,9 +126,10 @@ socket.on('emojiError', (msg) => {
     emojiButtons.forEach(button => button.disabled = false);
 });
 
-// Update grid with user positions
+// User updates
 let myPosition = null;
-socket.on('usersUpdate', (users) => {
+socket.on('usersUpdate', (buffer) => {
+    const users = decompressData(buffer);
     const squares = document.querySelectorAll('.grid-square');
     squares.forEach(square => {
         square.innerHTML = '';
@@ -152,7 +143,7 @@ socket.on('usersUpdate', (users) => {
             content.classList.add('figure');
             content.dataset.name = name;
             if (image) {
-                const img = document.createElement('img');
+                const img = new Image();
                 img.src = image;
                 img.style.width = '2rem';
                 img.style.height = '2rem';
@@ -165,82 +156,44 @@ socket.on('usersUpdate', (users) => {
                 content.draggable = true;
                 content.addEventListener('dragstart', (e) => {
                     e.dataTransfer.setData('text/plain', 'move');
-                    content.classList.add('hover');
                     highlightAvailableMoves(x, y, users);
                 });
-                content.addEventListener('dragend', () => {
-                    content.classList.remove('hover');
-                });
-                content.addEventListener('click', () => {
-                    highlightAvailableMoves(x, y, users);
-                });
+                content.addEventListener('click', () => highlightAvailableMoves(x, y, users));
                 myPosition = { x, y };
             }
-
             square.appendChild(content);
         }
     });
 });
 
-// Highlight available moves in a filled diamond pattern (6 squares max)
-function highlightAvailableMoves(x, y, users) {
+// Move handling
+const highlightAvailableMoves = throttle((x, y, users) => {
     clearHighlights();
     const maxSteps = 6;
-    const squares = document.querySelectorAll('.grid-square');
-    squares.forEach(square => {
+    document.querySelectorAll('.grid-square').forEach(square => {
         const targetX = parseInt(square.dataset.x);
         const targetY = parseInt(square.dataset.y);
         const dx = Math.abs(targetX - x);
         const dy = Math.abs(targetY - y);
-        
         const isWithinRange = (dx + dy) <= maxSteps;
         const isOccupied = Object.values(users).some(u => u.x === targetX && u.y === targetY && u !== users[socket.id]);
-        
-        if (isWithinRange && !isOccupied) {
-            square.classList.add('highlight');
-        }
+        if (isWithinRange && !isOccupied) square.classList.add('highlight');
     });
-}
+}, 50);
 
-function clearHighlights() {
-    document.querySelectorAll('.grid-square.highlight').forEach(square => {
-        square.classList.remove('highlight');
-    });
-}
+const clearHighlights = () => {
+    document.querySelectorAll('.grid-square.highlight').forEach(square => square.classList.remove('highlight'));
+};
 
-function isValidMove(targetX, targetY) {
+const isValidMove = (targetX, targetY) => {
     if (!myPosition) return false;
     const dx = Math.abs(targetX - myPosition.x);
     const dy = Math.abs(targetY - myPosition.y);
     return (dx + dy) <= 6;
-}
+};
 
-// Arrow button controls
-document.getElementById('moveUp').addEventListener('click', () => moveFigure(0, -1));
-document.getElementById('moveDown').addEventListener('click', () => moveFigure(0, 1));
-document.getElementById('moveLeft').addEventListener('click', () => moveFigure(-1, 0));
-document.getElementById('moveRight').addEventListener('click', () => moveFigure(1, 0));
-
-// Keyboard arrow controls
-document.addEventListener('keydown', (e) => {
-    switch (e.key) {
-        case 'ArrowUp':
-            moveFigure(0, -1);
-            break;
-        case 'ArrowDown':
-            moveFigure(0, 1);
-            break;
-        case 'ArrowLeft':
-            moveFigure(-1, 0);
-            break;
-        case 'ArrowRight':
-            moveFigure(1, 0);
-            break;
-    }
-});
-
-// Move figure function
-function moveFigure(dx, dy) {
+// Controls
+const moveFigure = throttle((dx, dy) => {
     if (!myPosition) return;
     const targetX = myPosition.x + dx;
     const targetY = myPosition.y + dy;
@@ -252,9 +205,18 @@ function moveFigure(dx, dy) {
             clearHighlights();
         }
     }
-}
+}, 100);
 
-// Helper to get current users from the grid
+['moveUp', 'moveDown', 'moveLeft', 'moveRight'].forEach((id, i) => {
+    document.getElementById(id).addEventListener('click', () => moveFigure([0, 0, -1, 1][i], [-1, 1, 0, 0][i]));
+});
+
+document.addEventListener('keydown', (e) => {
+    const moves = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] };
+    if (moves[e.key]) moveFigure(...moves[e.key]);
+});
+
+// Helper to get current users
 function getCurrentUsers() {
     const users = {};
     document.querySelectorAll('.grid-square .figure').forEach(figure => {
@@ -267,62 +229,28 @@ function getCurrentUsers() {
     return users;
 }
 
-// Function to change the background image of the grid container's parent
-function changeBackgroundImage(imageUrl) {
-    const gridParent = document.querySelector('#gridContainer');
-    gridParent.style.backgroundImage = `url(${imageUrl})`;
-    gridParent.style.backgroundSize = 'fill';
-    gridParent.style.backgroundRepeat = 'no-repeat';
-    gridParent.style.overflow = 'auto';
-}
-
-// Example usage: change the background image when a new image is selected
-document.getElementById('backgroundImageInput').addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            changeBackgroundImage(event.target.result);
-        };
-        reader.readAsDataURL(file);
-    }
+// Background and grid updates
+socket.on('gridSizeUpdate', (buffer) => drawGrid(...Object.values(decompressData(buffer))));
+socket.on('backgroundImageUpdate', (buffer) => {
+    const url = decompressData(buffer);
+    document.getElementById('gridContainer').style.backgroundImage = `url(${url})`;
 });
 
-// Handle background image URL input
-document.getElementById('backgroundImageUrlInput').addEventListener('change', (e) => {
-    const imageUrl = e.target.value.trim();
-    if (imageUrl) {
-        socket.emit('changeBackgroundImage', imageUrl);
-    }
-});
-
-// Listen for background image change from server
-socket.on('backgroundImageUpdate', (imageUrl) => {
-    changeBackgroundImage(imageUrl);
-});
-
-// Handle grid size update
 document.getElementById('updateGridSize').addEventListener('click', () => {
     const width = parseInt(document.getElementById('gridWidthInput').value);
     const height = parseInt(document.getElementById('gridHeightInput').value);
-    if (width > 0 && height > 0) {
-        socket.emit('updateGridSize', { width, height });
-    }
+    if (width > 0 && height > 0) socket.emit('updateGridSize', { width, height });
 });
 
-// Listen for grid size update from server
-socket.on('gridSizeUpdate', ({ width, height }) => {
-    drawGrid(width, height);
+document.getElementById('backgroundImageUrlInput').addEventListener('change', (e) => {
+    const imageUrl = e.target.value.trim();
+    if (imageUrl) socket.emit('changeBackgroundImage', imageUrl);
 });
 
-function grid(){
-    $('#mainInterface').toggleClass('hidden');
-}
-
-function dm(){
+// Your existing toggle functions
+function grid() { $('#mainInterface').toggleClass('hidden'); }
+function dm() { 
     $('#dmControllers').toggleClass('hidden');
-}
-
-function controllers(){
-    $('#controller').toggleClass('hidden');
-}
+    $('#mainInterface').toggleClass('hidden');
+ }
+function controllers() { $('#controller').toggleClass('hidden'); }

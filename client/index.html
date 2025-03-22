@@ -51,7 +51,8 @@
     <!-- Main interface (initially hidden) -->
     <div id="mainInterface" class="flex flex-col gap-4  bg-white overflow-auto rounded-lg m-0 w-full h-full hidden">
         <div class="border overflow-scroll rounded-lg p-4" style="max-width: 95vw; min-height: 90vh ;max-height: 90vh;">
-            <div id="gridContainer" class="grid w-full h-full p-4"></div>
+            <div id="gridContainer" class="grid w-full h-full p-4"
+                style="background-repeat: no-repeat; background-size: auto;"></div>
         </div>
     </div>
 
@@ -76,41 +77,59 @@
     </div>
 
     <!-- Add grid size input fields -->
-    <div class="form-group p-6 bg-white shadow-xl rounded-2xl max-w-lg mx-auto border border-gray-200 hidden"
-        id="dmControllers">
-        <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2 mb-4">
-            🛠️ Grid Admin Controller
-        </h2>
+    <div class="flex row justify-between gap-4 mt-4 w-100">
+        <div class="form-group p-6 bg-white shadow-xl rounded-2xl max-w-lg mx-auto border border-gray-200 hidden w-50"
+            id="dmControllers">
+            <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2 mb-4">
+                🛠️ Grid Admin Controller
+            </h2>
 
-        <div class="flex gap-6 mb-6">
-            <div class="flex flex-col gap-2 items-center w-1/3">
-                <label for="gridWidthInput" class="text-gray-600">📏 Grid Width</label>
-                <input type="number" class="form-control border p-2 rounded-lg w-full" id="gridWidthInput" value="10">
+            <div class="flex gap-6 mb-6">
+                <div class="flex flex-col gap-2 items-center w-1/3">
+                    <label for="gridWidthInput" class="text-gray-600">📏 Grid Width</label>
+                    <input type="number" class="form-control border p-2 rounded-lg w-full" id="gridWidthInput"
+                        value="10">
+                </div>
+                <div class="flex flex-col gap-2 items-center w-1/3">
+                    <label for="gridHeightInput" class="text-gray-600">📐 Grid Height</label>
+                    <input type="number" class="form-control border p-2 rounded-lg w-full" id="gridHeightInput"
+                        value="10">
+                </div>
+                <button id="updateGridSize"
+                    class="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg w-1/3">
+                    🚀 Update Grid
+                </button>
             </div>
-            <div class="flex flex-col gap-2 items-center w-1/3">
-                <label for="gridHeightInput" class="text-gray-600">📐 Grid Height</label>
-                <input type="number" class="form-control border p-2 rounded-lg w-full" id="gridHeightInput" value="10">
+
+            <div class="form-group mb-4">
+                <label for="backgroundImageInput" class="text-gray-600">🖼️ Change Background Image</label>
+                <input type="file" class="form-control border p-2 rounded-lg w-full" id="backgroundImageInput"
+                    accept="image/*">
             </div>
-            <button id="updateGridSize"
-                class="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg w-1/3">
-                🚀 Update Grid
-            </button>
+
+            <div class="form-group">
+                <label for="backgroundImageUrlInput" class="text-gray-600">🌐 Change Background Image (URL)</label>
+                <input type="text" class="form-control border p-2 rounded-lg w-full" id="backgroundImageUrlInput"
+                    placeholder="Enter image URL">
+            </div>
         </div>
 
-        <div class="form-group mb-4">
-            <label for="backgroundImageInput" class="text-gray-600">🖼️ Change Background Image</label>
-            <input type="file" class="form-control border p-2 rounded-lg w-full" id="backgroundImageInput"
-                accept="image/*">
-        </div>
-
-        <div class="form-group">
-            <label for="backgroundImageUrlInput" class="text-gray-600">🌐 Change Background Image (URL)</label>
-            <input type="text" class="form-control border p-2 rounded-lg w-full" id="backgroundImageUrlInput"
-                placeholder="Enter image URL">
+        <div class="form-group p-6 bg-white shadow-xl rounded-2xl max-w-lg mx-auto border border-gray-200 hidden w-50"
+            id="entityListSection">
+            <label class="text-gray-600">🌳 Entity List</label>
+            <div id="entityList" class="flex flex-wrap gap-2">
+                <button class="entity-btn bg-gray-200 hover:bg-gray-300 p-2 rounded-lg" data-entity="bush">🌿
+                    Bush</button>
+                <button class="entity-btn bg-gray-200 hover:bg-gray-300 p-2 rounded-lg" data-entity="tree">🌳
+                    Tree</button>
+                <button class="entity-btn bg-gray-200 hover:bg-gray-300 p-2 rounded-lg" data-entity="wall">🧱
+                    Wall</button>
+            </div>
         </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.0.4/pako.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
