@@ -283,3 +283,17 @@ document.getElementById('backgroundImageInput').addEventListener('change', (e) =
         reader.readAsDataURL(file);
     }
 });
+
+// Handle grid size update
+document.getElementById('updateGridSize').addEventListener('click', () => {
+    const width = parseInt(document.getElementById('gridWidthInput').value);
+    const height = parseInt(document.getElementById('gridHeightInput').value);
+    if (width > 0 && height > 0) {
+        socket.emit('updateGridSize', { width, height });
+    }
+});
+
+// Listen for grid size update from server
+socket.on('gridSizeUpdate', ({ width, height }) => {
+    drawGrid(width, height);
+});

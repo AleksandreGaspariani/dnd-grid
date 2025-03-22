@@ -51,10 +51,6 @@
     <!-- Main interface (initially hidden) -->
     <div class="d-flex flex-column gap-3" id="mainInterface" style="display: none;">
         <!-- Add background image input -->
-        <div class="form-group">
-            <label for="backgroundImageInput">Change Background Image</label>
-            <input type="file" class="form-control-file" id="backgroundImageInput" accept="image/*">
-        </div>
         <form id="messageForm" class="d-flex gap-2">
             <input id="messageInput" type="text" class="form-control" placeholder="Type a message">
             <button type="submit" class="btn btn-primary">Send</button>
@@ -71,6 +67,25 @@
         <button id="moveLeft" class="btn btn-secondary">←</button>
         <button id="moveDown" class="btn btn-secondary">↓</button>
         <button id="moveRight" class="btn btn-secondary">→</button>
+    </div>
+
+    <!-- Add grid size input fields -->
+    <div class="form-group d-flex flex-column gap-2 w-50">
+        <div class="d-flex" style="gap: 2rem;">
+            <div class="d-flex flex-column gap-2 align-items-center w-25">
+                <label for="gridWidthInput">Grid Width</label>
+                <input type="number" class="form-control" id="gridWidthInput" value="0">
+            </div>
+            <div class="d-flex flex-column gap-2 align-items-center w-25">
+                <label for="gridHeightInput">Grid Height</label>
+                <input type="number" class="form-control" id="gridHeightInput" value="0">
+            </div>
+            <button id="updateGridSize" class="btn btn-primary btn-sm mt-2 w-50">Update Grid Size</button>
+        </div>
+        <div class="form-group">
+            <label for="backgroundImageInput">Change Background Image</label>
+            <input type="file" class="form-control-file" id="backgroundImageInput" accept="image/*">
+        </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
