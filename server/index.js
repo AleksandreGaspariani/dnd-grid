@@ -11,11 +11,13 @@ app.use(express.static('../client'));
 const availableEmojis = ['🤖', '🧙‍♂️', '🐱', '🐱‍🏍', '💂🏿‍♀️'];
 const users = {};
 let gridSize = { width: 20, height: 20 };
+let backgroundImageUrl = '';
 
 io.on('connection', (socket) => {
     console.log('A user connected:', socket.id);
     socket.emit('emojiList', availableEmojis);
     socket.emit('gridSizeUpdate', gridSize);
+    socket.emit('backgroundImageUpdate', backgroundImageUrl);
 
     socket.on('pickUser', ({ name, emoji, image }) => {
         if (emoji && availableEmojis.includes(emoji) && !Object.values(users).some(u => u.emoji === emoji)) {
@@ -61,6 +63,12 @@ io.on('connection', (socket) => {
         gridSize = { width, height };
         io.emit('gridSizeUpdate', gridSize);
         console.log(`Grid size updated to: ${width}x${height}`);
+    });
+
+    socket.on('changeBackgroundImage', (imageUrl) => {
+        backgroundImageUrl = imageUrl;
+        io.emit('backgroundImageUpdate', backgroundImageUrl);
+        console.log(`Background image updated to: ${imageUrl}`);
     });
 
     socket.on('disconnect', () => {

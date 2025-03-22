@@ -57,7 +57,7 @@
         </form>
         <div class="d-flex gap-3 my-2">
             <div class="border overflow-auto"
-                style="max-height: 500px; max-width: 100%; background-size: 100% 100%; background-repeat: no-repeat; overflow: auto;">
+                style="max-height: 500px; max-width: 100%; background-size: 100% 100%; background-repeat: no-repeat; overflow: auto; background-position: center; background-size: contain;">
                 <div id="gridContainer" class="grid"></div>
             </div>
         </div>
@@ -85,6 +85,10 @@
         <div class="form-group">
             <label for="backgroundImageInput">Change Background Image</label>
             <input type="file" class="form-control-file" id="backgroundImageInput" accept="image/*">
+        </div>
+        <div class="form-group">
+            <label for="backgroundImageUrlInput">Change Background Image (URL)</label>
+            <input type="text" class="form-control" id="backgroundImageUrlInput" placeholder="Enter image URL">
         </div>
     </div>
 

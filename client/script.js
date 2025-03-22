@@ -266,10 +266,10 @@ function getCurrentUsers() {
 function changeBackgroundImage(imageUrl) {
     const gridParent = document.querySelector('#gridContainer');
     gridParent.style.backgroundImage = `url(${imageUrl})`;
-    gridParent.style.backgroundSize = '100% 100%';
+    // gridParent.style.backgroundSize = '100% 100%';
+    gridParent.style.backgroundSize = 'fill';
     gridParent.style.backgroundRepeat = 'no-repeat';
     gridParent.style.overflow = 'auto';
-    gridParent.style.objectFit = 'fill';
 }
 
 // Example usage: change the background image when a new image is selected
@@ -282,6 +282,19 @@ document.getElementById('backgroundImageInput').addEventListener('change', (e) =
         };
         reader.readAsDataURL(file);
     }
+});
+
+// Handle background image URL input
+document.getElementById('backgroundImageUrlInput').addEventListener('change', (e) => {
+    const imageUrl = e.target.value.trim();
+    if (imageUrl) {
+        socket.emit('changeBackgroundImage', imageUrl);
+    }
+});
+
+// Listen for background image change from server
+socket.on('backgroundImageUpdate', (imageUrl) => {
+    changeBackgroundImage(imageUrl);
 });
 
 // Handle grid size update
