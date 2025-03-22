@@ -19,10 +19,17 @@ document.getElementById('messageForm').addEventListener('submit', (e) => {
 
 // Listen for incoming messages from the server
 socket.on('chatMessage', (msg) => {
-    const messages = document.getElementById('messages');
-    const li = document.createElement('li');
-    li.textContent = msg;
-    messages.appendChild(li);
+    const [userName, message] = msg.split(': ');
+    const userFigure = document.querySelector(`.figure[data-name="${userName}"]`);
+    if (userFigure) {
+        const messageBubble = document.createElement('div');
+        messageBubble.classList.add('message-bubble');
+        messageBubble.textContent = message;
+        userFigure.appendChild(messageBubble);
+        setTimeout(() => {
+            userFigure.removeChild(messageBubble);
+        }, 8000);
+    }
 });
 
 // Grid drawing function
@@ -91,7 +98,7 @@ document.getElementById('userSetupForm').addEventListener('submit', (e) => {
 
     $('#userSetupModal').modal('hide');
     document.getElementById('mainInterface').style.display = 'block';
-    drawGrid(20, 20);
+    drawGrid(40, 20);
 });
 
 // Add click listeners to emoji buttons
@@ -132,11 +139,12 @@ socket.on('usersUpdate', (users) => {
         square.classList.remove('highlight');
     });
 
-    Object.entries(users).forEach(([id, { emoji, image, x, y }]) => {
+    Object.entries(users).forEach(([id, { name, emoji, image, x, y }]) => {
         const square = document.querySelector(`.grid-square[data-x="${x}"][data-y="${y}"]`);
         if (square) {
             const content = document.createElement('div');
             content.classList.add('figure');
+            content.dataset.name = name;
             if (image) {
                 const img = document.createElement('img');
                 img.src = image;

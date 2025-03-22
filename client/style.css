@@ -6,16 +6,17 @@
 .grid-square {
     width: 2rem;
     height: 2rem;
-    background-color: #f0f0f046;
+    background-color: #f0f0f01d;
     border: 0.1px solid #99999926;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    position: relative;
 }
 
 .grid-square:hover {
-    background-color: #e0e0e0;
+    background-color: #42798757;
 }
 
 .figure {
@@ -57,4 +58,25 @@
     height: 40px;
     margin: 5px;
     font-size: 1.2rem;
+}
+
+.message-bubble {
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    right: 50%;
+    transform: translateX(-50%);
+    background-color: white;
+    color: black;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 5px;
+    white-space: nowrap;
+    z-index: 10;
+    margin-bottom: 5px;
+    width: fit-content;
+    max-width: 6rem;
+    height: fit-content;
+    max-height: 6rem;
+    overflow: auto;
 }
