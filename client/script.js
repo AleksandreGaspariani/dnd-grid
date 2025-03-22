@@ -142,6 +142,7 @@ socket.on('usersUpdate', (buffer) => {
             const content = document.createElement('div');
             content.classList.add('figure');
             content.dataset.name = name;
+            content.dataset.id = id; // Set data-id attribute
             if (image) {
                 const img = new Image();
                 img.src = image;
@@ -252,5 +253,69 @@ function grid() { $('#mainInterface').toggleClass('hidden'); }
 function dm() { 
     $('#dmControllers').toggleClass('hidden');
     $('#mainInterface').toggleClass('hidden');
+    $('#dmMoveControls').toggleClass('hidden');
  }
 function controllers() { $('#controller').toggleClass('hidden'); }
+
+let selectedUserId = null; // Define selectedUserId
+
+// Function to set selected user for DM
+const setSelectedUser = (userId) => {
+    selectedUserId = userId;
+    document.querySelectorAll('.figure').forEach(figure => {
+        figure.classList.remove('selected');
+    });
+    const selectedFigure = document.querySelector(`.figure[data-id="${userId}"]`);
+    if (selectedFigure) {
+        selectedFigure.classList.add('selected');
+    }
+};
+
+// Add click event to figures for DM to select a user
+document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('figure')) {
+        const userId = e.target.dataset.id;
+        setSelectedUser(userId);
+    }
+});
+
+// DM move handling
+const dmMoveFigure = (userId, dx, dy) => {
+    const userFigure = document.querySelector(`.figure[data-id="${userId}"]`);
+    if (userFigure) {
+        const currentX = parseInt(userFigure.parentElement.dataset.x);
+        const currentY = parseInt(userFigure.parentElement.dataset.y);
+        const targetX = currentX + dx;
+        const targetY = currentY + dy;
+        socket.emit('dmMove', { userId, position: { x: targetX, y: targetY } });
+    }
+};
+
+// Add event listeners for DM controls
+document.getElementById('dmMoveUp').addEventListener('click', () => dmMoveFigure(selectedUserId, 0, -1));
+document.getElementById('dmMoveDown').addEventListener('click', () => dmMoveFigure(selectedUserId, 0, 1));
+document.getElementById('dmMoveLeft').addEventListener('click', () => dmMoveFigure(selectedUserId, -1, 0));
+document.getElementById('dmMoveRight').addEventListener('click', () => dmMoveFigure(selectedUserId, 1, 0));
+
+// Add key listeners for DM movements (W, A, S, D)
+document.addEventListener('keydown', (e) => {
+    if (!selectedUserId) return; // Ensure a user is selected
+    switch (e.key) {
+        case 'w':
+        case 'W':
+            dmMoveFigure(selectedUserId, 0, -1);
+            break;
+        case 's':
+        case 'S':
+            dmMoveFigure(selectedUserId, 0, 1);
+            break;
+        case 'a':
+        case 'A':
+            dmMoveFigure(selectedUserId, -1, 0);
+            break;
+        case 'd':
+        case 'D':
+            dmMoveFigure(selectedUserId, 1, 0);
+            break;
+    }
+});

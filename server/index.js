@@ -95,6 +95,22 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('dmMove', ({ userId, position }) => {
+        if (users[userId]) {
+            const user = users[userId];
+            const dx = Math.abs(position.x - user.x);
+            const dy = Math.abs(position.y - user.y);
+            const isWithinRange = (dx + dy) <= 6;
+            const isOccupied = Object.values(users).some(u => u.x === position.x && u.y === position.y && u !== user);
+
+            if (isWithinRange && !isOccupied) {
+                user.x = position.x;
+                user.y = position.y;
+                compressData(users).then(buffer => io.emit('usersUpdate', buffer));
+            }
+        }
+    });
+
     socket.on('updateGridSize', ({ width, height }) => {
         gridSize = { width, height };
         compressData(gridSize).then(buffer => io.emit('gridSizeUpdate', buffer));
