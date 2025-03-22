@@ -253,3 +253,25 @@ function getCurrentUsers() {
     });
     return users;
 }
+
+// Function to change the background image of the grid container's parent
+function changeBackgroundImage(imageUrl) {
+    const gridParent = document.querySelector('#gridContainer');
+    gridParent.style.backgroundImage = `url(${imageUrl})`;
+    gridParent.style.backgroundSize = '100% 100%';
+    gridParent.style.backgroundRepeat = 'no-repeat';
+    gridParent.style.overflow = 'auto';
+    gridParent.style.objectFit = 'fill';
+}
+
+// Example usage: change the background image when a new image is selected
+document.getElementById('backgroundImageInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            changeBackgroundImage(event.target.result);
+        };
+        reader.readAsDataURL(file);
+    }
+});

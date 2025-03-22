@@ -50,12 +50,18 @@
 
     <!-- Main interface (initially hidden) -->
     <div class="d-flex flex-column gap-3" id="mainInterface" style="display: none;">
+        <!-- Add background image input -->
+        <div class="form-group">
+            <label for="backgroundImageInput">Change Background Image</label>
+            <input type="file" class="form-control-file" id="backgroundImageInput" accept="image/*">
+        </div>
         <form id="messageForm" class="d-flex gap-2">
             <input id="messageInput" type="text" class="form-control" placeholder="Type a message">
             <button type="submit" class="btn btn-primary">Send</button>
         </form>
         <div class="d-flex gap-3 my-2">
-            <div class="border overflow-auto" style="max-height: 500px; max-width: 800px;">
+            <div class="border overflow-auto"
+                style="max-height: 500px; max-width: 800px; background-size: 100% 100%; background-repeat: no-repeat; overflow: auto;">
                 <div id="gridContainer" class="grid"></div>
             </div>
             <div class="w-25 ms-2">
