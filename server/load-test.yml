@@ -1,0 +1,38 @@
+# config:
+#   target: "http://localhost:3000"  # Your server's address
+#   phases:
+#     - duration: 60              # Test runs for 60 seconds
+#       arrivalRate: 5            # 5 new users per second (300 total users)
+#       rampTo: 20                # Ramp up to 20 users per second
+#       name: "Warm-up phase"
+#     - duration: 120             # Sustained load for 120 seconds
+#       arrivalRate: 20           # 20 new users per second (2400 total users)
+#       name: "Peak load phase"
+#   engines:
+#     socketio-v3: {}            # Use v3/v4 engine if needed
+#   processor: "./processor.js"  # Optional: Custom JS for complex logic
+
+# scenarios:
+#   - name: "User joins, moves, and chats"
+#     engine: "socketio-v3"       # Specify engine if using v3/v4
+#     flow:
+#       - think: 1                # Wait 1s for WebSocket upgrade
+#       - emit:                   # Simulate picking a user
+#           channel: "pickUser"
+#           data:
+#             name: "TestUser_{{$randomNumber(1, 1000)}}"  # Unique name
+#             emoji: "🤖"                            # Fixed emoji for simplicity
+#       - think: 2                # Wait 2s to simulate user setup
+#       - emit:                   # Simulate movement
+#           channel: "move"
+#           data:
+#             x: "{{$randomNumber(0, 19)}}"  # Random x within grid (0-19)
+#             y: "{{$randomNumber(0, 19)}}"  # Random y within grid (0-19)
+#       - think: 1                # Wait 1s between actions
+#       - emit:                   # Send a chat message
+#           channel: "chatMessage"
+#           data: "Hello from virtual user {{$randomNumber(1, 1000)}}!"
+#       - think: 5       
+      
+#       #npx artillery run load-test.yml        
+#       #  Stay connected for 5s before disconnecting
